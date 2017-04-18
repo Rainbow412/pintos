@@ -369,7 +369,7 @@ thread_set_priority (int new_priority)
 {
   thread_current ()->priority = new_priority;
   
-  
+  struct thread *cur = thread_current ();
   struct thread *next = next_thread_to_run ();
   enum intr_level old_level; 
   ASSERT (!intr_context ());
