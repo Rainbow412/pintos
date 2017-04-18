@@ -374,7 +374,7 @@ thread_set_priority (int new_priority)
   enum intr_level old_level; 
   ASSERT (!intr_context ());
   old_level = intr_disable ();
-  if (next->priority < new_priority)
+  if (next->priority > new_priority)
   {
   	list_insert_ordered (&ready_list, &cur->elem, (list_less_func *) &thread_cmp_priority, NULL);
   	cur->status = THREAD_READY;
