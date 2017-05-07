@@ -233,7 +233,7 @@ lock_acquire (struct lock *lock)
   while(thrd != NULL && thrd->priority < curr->priority)
   {
   	thrd->donated = 1; //donated状态标记 
-  	thread_set_priority_fixed(thrd, curr->priority);//优先级捐赠 
+  	thread_set_priority_fixed(thrd, curr->priority, 0);//优先级捐赠 
   	if(another->lock_priority < curr->priority) 
   	{
   		another->lock_priority = curr->priority; //更新锁的最大优先级 

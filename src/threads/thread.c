@@ -384,7 +384,7 @@ thread_set_priority (int new_priority)
 }
 
 //lab3
-void thread_set_priority_fixed(struct thread *thrd, int new_priority, bool flag = 0)
+void thread_set_priority_fixed(struct thread *thrd, int new_priority, bool flag)
 {
 	enum intr_level old_level;
   	old_level = intr_disable ();
