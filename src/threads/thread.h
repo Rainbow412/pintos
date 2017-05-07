@@ -112,7 +112,7 @@ struct thread
   };
   
 bool thread_cmp_priority (const struct list_elem *, const struct list_elem *, void *);
-void thread_set_priority_fixed(struct thread *, int, bool = 0);
+void thread_set_priority_fixed(struct thread *, int, bool flag = 0);
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
