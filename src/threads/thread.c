@@ -384,7 +384,7 @@ thread_set_priority (int new_priority)
 }
 
 //lab3
-void thread_set_priority_fixed(struct thread *thrd, int new_priority)
+void thread_set_priority_fixed(struct thread *thrd, int new_priority, bool flag = 0)
 {
 	enum intr_level old_level;
   	old_level = intr_disable ();
@@ -395,15 +395,21 @@ void thread_set_priority_fixed(struct thread *thrd, int new_priority)
   	}
   	else //被捐赠 
   	{
-
-		//若新优先级比现有优先级低，则修改old_priority 
-		if(new_priority < thrd->priority)
-			thrd->old_priority = new_priority;
+		if(!flag)
+		{
+			//若新优先级比现有优先级低，则修改old_priority 
+			if(new_priority < thrd->priority)
+				thrd->old_priority = new_priority;
+			else
+			{
+				thrd->priority = new_priority;
+			}
+		}
 		else
 		{
-			thrd->old_priority = thrd->priority;
 			thrd->priority = new_priority;
 		}
+		
 			
 
   	}

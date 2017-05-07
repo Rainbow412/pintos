@@ -317,9 +317,9 @@ lock_release (struct lock *lock)
   	struct lock *another;
 	another = list_entry(list_front(&curr->locks), struct lock, holder_elem);
 
-  	if(another->lock_priority > curr->priority)
+  	if(another->lock_priority != PRI_MIN-1)
   	{
-  		thread_set_priority(another->lock_priority);//优先级捐赠 
+  		thread_set_priority_fixed(curr, another->lock_priority, 1);//优先级捐赠 
   	}
   	else
   	  thread_set_priority(curr->old_priority);
