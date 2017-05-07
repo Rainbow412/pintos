@@ -384,6 +384,7 @@ thread_set_priority (int new_priority)
 }
 
 //lab3
+//设置新优先级，旧优先级保存到old_priority中 
 void thread_set_priority_unforgot(struct thread *thrd, int new_priority)
 {
 	enum intr_level old_level;
@@ -395,7 +396,7 @@ void thread_set_priority_unforgot(struct thread *thrd, int new_priority)
   	}
   	else //被捐赠 
   	{
-		//若新优先级比现有优先级低，则修改old_priority 
+		//若新优先级比现有优先级低，则修改old_priority
 		if(new_priority < thrd->priority)
 			thrd->old_priority = new_priority;
 		else
@@ -411,27 +412,40 @@ void thread_set_priority_unforgot(struct thread *thrd, int new_priority)
 }
 
 //lab3
-void thread_set_priority_forgot(struct thread *thrd, int new_priority)
+void thread_donate_priority(struct thread *thrd, int new_priority)
 {
 	enum intr_level old_level;
   	old_level = intr_disable ();
-  	
-  	if(thrd->donated == false) //不是被捐赠状态 
-  	{
-  		thrd->priority = thrd->old_priority = new_priority;
-  	}
-  	else //被捐赠 
-  	{
-		thrd->priority = new_priority;
-  	}
-  	
-  	//优先级抢占
+
+	thrd->priority = new_priority;
+	
+	//优先级抢占
   	int list_begin_priority = list_entry(list_begin(&ready_list), struct thread, elem)->priority;
   	if(list_begin_priority > new_priority)  
   		thread_yield();
-  		
-  	intr_set_level (old_level);
+			
+	intr_set_level (old_level);		
 }
+
+////lab3
+////新的优先级直接覆盖旧的优先级 
+//void thread_set_priority_forgot(struct thread *thrd, int new_priority)
+//{
+//	enum intr_level old_level;
+//  	old_level = intr_disable ();
+//  	
+//  	if(thrd->donated == false) //不是被捐赠状态 
+//  		thrd->priority = thrd->old_priority = new_priority;
+//  	else //被捐赠 
+//		thrd->priority = new_priority;
+//  	
+//  	//优先级抢占
+//  	int list_begin_priority = list_entry(list_begin(&ready_list), struct thread, elem)->priority;
+//  	if(list_begin_priority > new_priority)  
+//  		thread_yield();
+//  		
+//  	intr_set_level (old_level);
+//}
 
 /* Returns the current thread's priority. */
 int
