@@ -380,11 +380,11 @@ thread_set_priority (int new_priority)
   if(list_begin_priority > new_priority)
   	thread_yield();
   	*/
-  	thread_set_priority_fixed(thread_current(), new_priority, 0);
+  	thread_set_priority_unforgot(thread_current(), new_priority);
 }
 
 //lab3
-void thread_set_priority_fixed(struct thread *thrd, int new_priority, bool flag)
+void thread_set_priority_unforgot(struct thread *thrd, int new_priority)
 {
 	enum intr_level old_level;
   	old_level = intr_disable ();
@@ -395,29 +395,37 @@ void thread_set_priority_fixed(struct thread *thrd, int new_priority, bool flag)
   	}
   	else //被捐赠 
   	{
-		if(!flag)
-		{
-			//若新优先级比现有优先级低，则修改old_priority 
-			if(new_priority < thrd->priority)
-				thrd->old_priority = new_priority;
-			else
-			{
-				thrd->priority = new_priority;
-			}
-		}
+		//若新优先级比现有优先级低，则修改old_priority 
+		if(new_priority < thrd->priority)
+			thrd->old_priority = new_priority;
 		else
-		{
 			thrd->priority = new_priority;
-		}
-		
-			
-
   	}
   	
   	//优先级抢占
   	int list_begin_priority = list_entry(list_begin(&ready_list), struct thread, elem)->priority;
   	if(list_begin_priority > new_priority)  
   		thread_yield();
+  		
+  	intr_set_level (old_level);
+}
+
+//lab3
+void thread_set_priority_forgot(struct thread *thrd, int new_priority)
+{
+	enum intr_level old_level;
+  	old_level = intr_disable ();
+  	
+  	ASSERT (thrd->donated);
+  	
+  	thrd->priority = new_priority;
+  	
+  	//优先级抢占
+  	int list_begin_priority = list_entry(list_begin(&ready_list), struct thread, elem)->priority;
+  	if(list_begin_priority > new_priority)  
+  		thread_yield();
+  		
+  	intr_set_level (old_level);
 }
 
 /* Returns the current thread's priority. */
