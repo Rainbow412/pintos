@@ -300,7 +300,7 @@ lock_release (struct lock *lock)
   enum intr_level old_level;
   old_level = intr_disable ();
   
-  struct thread *curr = thread->current();
+  struct thread *curr = thread_current();
   lock->holder = NULL;
   list_remove(&lock->holder_elem); //移出locks队列
   lock->lock_priority = PRI_MIN-1;
@@ -314,7 +314,8 @@ lock_release (struct lock *lock)
   }
   else
   {
-  	struct lock *another = list_enty(list_front(&curr->locks), struct lock, holder_elem);
+  	struct lock *another;
+	another = list_enty(list_front(&curr->locks), struct lock, holder_elem);
   	if(another->lock_priority > curr->priority)
   	  thread_set_priority(another->lock_priority);//优先级捐赠 
   	else

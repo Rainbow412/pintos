@@ -28,7 +28,7 @@ struct lock
     int lock_priority;
   };
   
-bool lock_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+bool lock_cmp_priority (const struct list_elem *, const struct list_elem *, void *);
 
 void lock_init (struct lock *);
 void lock_acquire (struct lock *);
