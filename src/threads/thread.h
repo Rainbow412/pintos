@@ -113,7 +113,8 @@ struct thread
   
 bool thread_cmp_priority (const struct list_elem *, const struct list_elem *, void *);
 void thread_set_priority_unforgot(struct thread *, int);
-void thread_set_priority_forgot(struct thread *, int);
+//void thread_set_priority_forgot(struct thread *, int);
+void thread_donate_priority(struct thread *, int);
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.

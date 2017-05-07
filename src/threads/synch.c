@@ -233,7 +233,7 @@ lock_acquire (struct lock *lock)
   while(thrd != NULL && thrd->priority < curr->priority)
   {
   	thrd->donated = 1; //donated状态标记 
-  	thread_set_priority_unforgot(thrd, curr->priority);//优先级捐赠 
+  	thread_donate_priority(thrd, curr->priority);//优先级捐赠 
   	if(another->lock_priority < curr->priority) 
   	{
   		another->lock_priority = curr->priority; //更新锁的最大优先级 
@@ -316,11 +316,19 @@ lock_release (struct lock *lock)
   {
   	struct lock *another;
 	another = list_entry(list_front(&curr->locks), struct lock, holder_elem);
+	
+//	//拥有的其他锁还未释放 
+//  	if(another->lock_priority != PRI_MIN-1)
+//  	{
+//  		//恢复到优先级被捐赠前的状态，不用保存old_priority 
+//  		thread_set_priority_forgot(curr, another->lock_priority);
+//  	}
+//  	else
+//  	  thread_set_priority(curr->old_priority);
 
-  	if(another->lock_priority != PRI_MIN-1)
+  	if(another->lock_priority > curr->old_priority)
   	{
-  		//恢复到优先级被捐赠前的状态，不用保存old_priority 
-  		thread_set_priority_forgot(curr, another->lock_priority);
+  		thread_donate_priority(curr, another->lock_priority);//优先级捐赠 
   	}
   	else
   	  thread_set_priority(curr->old_priority);
