@@ -315,7 +315,7 @@ lock_release (struct lock *lock)
   else
   {
   	struct lock *another;
-	another = list_enty(list_front(&curr->locks), struct lock, holder_elem);
+	another = list_entry(list_front(&curr->locks), struct lock, holder_elem);
   	if(another->lock_priority > curr->priority)
   	  thread_set_priority(another->lock_priority);//сеох╪╤╬ХтЫ 
   	else
