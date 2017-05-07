@@ -380,7 +380,7 @@ thread_set_priority (int new_priority)
   if(list_begin_priority > new_priority)
   	thread_yield();
   	*/
-  	thread_set_priority_fixed(thread_current(), new_priority);
+  	thread_set_priority_fixed(thread_current(), new_priority, 0);
 }
 
 //lab3
