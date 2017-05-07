@@ -90,6 +90,12 @@ struct thread
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
     
+    //lab3
+	int old_priority;
+	struct list locks; //持有的锁 
+	bool donated;
+	struct lock *blocked; //被阻塞的锁 
+    
     /* Record the time the thread has been blocked. */
     int64_t ticks_blocked;
 
