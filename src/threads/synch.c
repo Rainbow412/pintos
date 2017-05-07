@@ -320,7 +320,6 @@ lock_release (struct lock *lock)
   	if(another->lock_priority > curr->priority)
   	{
   		thread_set_priority(another->lock_priority);//ÓÅÏÈ¼¶¾èÔù 
-  		printf("flag\n");
   	}
   	else
   	  thread_set_priority(curr->old_priority);
