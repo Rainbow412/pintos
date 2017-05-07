@@ -110,6 +110,9 @@ struct thread
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
   };
+  
+bool thread_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED);
+void thread_set_priority_fixed(struct thread *curr, int new_priority);
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.

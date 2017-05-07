@@ -37,7 +37,7 @@
 bool
 lock_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
 {
-  return list_entry (a, struct lock, elem)->lock_priority > list_entry (b, struct lock, elem)->lock_priority;
+  return list_entry (a, struct lock, holder_elem)->lock_priority > list_entry (b, struct lock, holder_elem)->lock_priority;
 }
 
 /* Initializes semaphore SEMA to VALUE.  A semaphore is a
@@ -203,6 +203,7 @@ lock_init (struct lock *lock)
   ASSERT (lock != NULL);
 
   lock->holder = NULL;
+  lock->lock_priority = PRI_MIN-1;
   sema_init (&lock->semaphore, 1);
 }
 
@@ -226,16 +227,16 @@ lock_acquire (struct lock *lock)
   old_level = intr_disable ();
   
   struct thread *thrd = lock->holder;
-  struct thread *curr = thread->current();
+  struct thread *curr = thread_current();
   struct lock *another = lock;
   curr->blocked = another;
   while(thrd != NULL && thrd->priority < curr->priority)
   {
   	thrd->donated = 1; //donated状态标记 
-  	thread_set_priority(thrd, curr->priority);//优先级捐赠 
+  	thread_set_priority_fixed(thrd, curr->priority);//优先级捐赠 
   	if(another->lock_priority < curr->priority) 
   	{
-  		another->lock_priority = curr->priority;v//更新锁的最大优先级 
+  		another->lock_priority = curr->priority; //更新锁的最大优先级 
   		//locks队列更新 
   		list_remove(&another->holder_elem);
   		list_insert_ordered(&thrd->locks, &another->holder_elem, lock_cmp_priority,NULL);
@@ -302,7 +303,7 @@ lock_release (struct lock *lock)
   struct thread *curr = thread->current();
   lock->holder = NULL;
   list_remove(&lock->holder_elem); //移出locks队列
-  lock->lock_priority = PRI_MIN-1；
+  lock->lock_priority = PRI_MIN-1;
    
   sema_up (&lock->semaphore);
   
@@ -315,10 +316,10 @@ lock_release (struct lock *lock)
   {
   	struct lock *another = list_enty(list_front(&curr->locks), struct lock, holder_elem);
   	if(another->lock_priority > curr->priority)
-  	  thread_set_priority(curr, another->lock_priority);//优先级捐赠 
+  	  thread_set_priority(another->lock_priority);//优先级捐赠 
   	else
   	{
-  		thread_set_priority(curr, curr->old_priority);
+  		thread_set_priority(curr->old_priority);
   	}
 	  
   }
