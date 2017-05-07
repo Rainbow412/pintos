@@ -77,7 +77,7 @@ sema_down (struct semaphore *sema)
   while (sema->value == 0) 
     {
       //lab3
-      //list_push_back (&sema->waiters, &thread_current ()->elem);
+      //waiters队列实现为优先级队列 
       list_insert_ordered(&sema->waiters, &thread_current ()->elem, thread_cmp_priority, NULL);
       //lab3 end
       thread_block ();
@@ -127,9 +127,12 @@ sema_up (struct semaphore *sema)
   old_level = intr_disable ();
   if (!list_empty (&sema->waiters)) 
   {
-
-  	thread_unblock (list_entry (list_pop_front (&sema->waiters),struct thread, elem));
-
+  	//lab3
+  	//waiters队列实现为优先级队列 
+  	list_sort(&sema->waiters, thread_cmp_priority, NULL);
+  	up = list_entry (list_pop_front (&sema->waiters),struct thread, elem);
+  	thread_unblock (up);
+  	//lab3 end
   }
     
   sema->value++;
