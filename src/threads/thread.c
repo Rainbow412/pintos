@@ -416,9 +416,14 @@ void thread_set_priority_forgot(struct thread *thrd, int new_priority)
 	enum intr_level old_level;
   	old_level = intr_disable ();
   	
-  	ASSERT (thrd->donated);
-  	
-  	thrd->priority = new_priority;
+  	if(thrd->donated == false) //不是被捐赠状态 
+  	{
+  		thrd->priority = thrd->old_priority = new_priority;
+  	}
+  	else //被捐赠 
+  	{
+		thrd->priority = new_priority;
+  	}
   	
   	//优先级抢占
   	int list_begin_priority = list_entry(list_begin(&ready_list), struct thread, elem)->priority;
