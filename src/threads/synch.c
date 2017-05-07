@@ -127,11 +127,9 @@ sema_up (struct semaphore *sema)
   old_level = intr_disable ();
   if (!list_empty (&sema->waiters)) 
   {
-  	//lab3
-  	list_sort(&sema->waiters, thread_cmp_priority, NULL);
-  	up = list_entry (list_pop_front (&sema->waiters),struct thread, elem);
-  	thread_unblock (up);
-  	//lab3 end
+
+  	thread_unblock (list_entry (list_pop_front (&sema->waiters),struct thread, elem));
+
   }
     
   sema->value++;
@@ -316,29 +314,16 @@ lock_release (struct lock *lock)
   {
   	struct lock *another;
 	another = list_entry(list_front(&curr->locks), struct lock, holder_elem);
-	
-//	//拥有的其他锁还未释放 
-//  	if(another->lock_priority != PRI_MIN-1)
-//  	{
-//  		//恢复到优先级被捐赠前的状态，不用保存old_priority 
-//  		thread_set_priority_forgot(curr, another->lock_priority);
-//  	}
-//  	else
-//  	  thread_set_priority(curr->old_priority);
-
-  	if(another->lock_priority > curr->old_priority)
-  	{
+	//占有的锁优先级比线程本身的优先级更高 
+  	if(another->lock_priority > curr->old_priority) 
   		thread_donate_priority(curr, another->lock_priority);//优先级捐赠 
-  	}
   	else
-  	  thread_set_priority(curr->old_priority);
+  	  thread_set_priority(curr->old_priority); //恢复为线程本身的优先级 
 	  
   }
   intr_set_level (old_level);
   //lab3 end 
 
-  
-  
 }
 
 /* Returns true if the current thread holds LOCK, false
