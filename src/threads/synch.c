@@ -231,6 +231,7 @@ lock_acquire (struct lock *lock)
   struct thread *curr = thread_current();
   struct lock *another = lock;
   curr->blocked = another;
+  //当持有锁的线程的优先级小于当前线程优先级时要进行优先级捐赠 
   while(thrd != NULL && thrd->priority < curr->priority)
   {
   	thrd->donated = 1; //donated状态标记 
@@ -241,7 +242,6 @@ lock_acquire (struct lock *lock)
   		//locks队列更新 
   		list_remove(&another->holder_elem);
   		list_insert_ordered(&thrd->locks, &another->holder_elem, lock_cmp_priority,NULL);
-  		
   	}
   	//迭代捐赠 
   	if(thrd->blocked!=NULL && thrd->status==THREAD_BLOCKED)
@@ -296,7 +296,6 @@ lock_release (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
   
-  
   //lab3
   enum intr_level old_level;
   old_level = intr_disable ();
@@ -313,16 +312,16 @@ lock_release (struct lock *lock)
   	curr->donated = 0; //donated状态恢复 
   	thread_set_priority(curr->old_priority); //恢复优先级 
   }
-  else
+  else //线程还占有锁 
   {
   	struct lock *another;
 	another = list_entry(list_front(&curr->locks), struct lock, holder_elem);
-	//占有的锁优先级比线程本身的优先级更高 
+	//占有的锁优先级比线程本身的优先级更高时，进行优先级捐赠 
+	//否则， 恢复为线程本身的优先级 
   	if(another->lock_priority > curr->old_priority) 
   		thread_donate_priority(curr, another->lock_priority);//优先级捐赠 
   	else
   	  thread_set_priority(curr->old_priority); //恢复为线程本身的优先级 
-	  
   }
   intr_set_level (old_level);
   //lab3 end 

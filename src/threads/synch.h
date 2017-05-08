@@ -24,10 +24,11 @@ struct lock
     struct semaphore semaphore; /* Binary semaphore controlling access. */
     
     //lab3
-    struct list_elem holder_elem;
-    int lock_priority;
+    struct list_elem holder_elem; //用于在locks队列排队 
+    int lock_priority; //锁的最高优先级 
   };
   
+//lab3 
 bool lock_cmp_priority (const struct list_elem *, const struct list_elem *, void *);
 
 void lock_init (struct lock *);

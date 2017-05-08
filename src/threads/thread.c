@@ -373,13 +373,6 @@ void
 thread_set_priority (int new_priority) 
 {
 	//lab3
-	/*
-  thread_current ()->priority = new_priority;
-  
-  int list_begin_priority = list_entry(list_begin(&ready_list), struct thread, elem)->priority;
-  if(list_begin_priority > new_priority)
-  	thread_yield();
-  	*/
   	enum intr_level old_level;
   	old_level = intr_disable ();
   	
@@ -391,11 +384,11 @@ thread_set_priority (int new_priority)
   	}
   	else //被捐赠 
   	{
-		//若新优先级比现有优先级低，则修改old_priority
+		//若新优先级比现有优先级低，则只修改old_priority
 		if(new_priority < thrd->priority)
 			thrd->old_priority = new_priority;
 		else
-			thrd->priority = new_priority;
+			thrd->priority = thrd->old_priority = new_priority;
   	}
   	
   	//优先级抢占

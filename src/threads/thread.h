@@ -91,10 +91,10 @@ struct thread
     struct list_elem allelem;           /* List element for all threads list. */
     
     //lab3
-	int old_priority;
-	struct list locks; //持有的锁 
-	bool donated;
-	struct lock *blocked; //被阻塞的锁 
+	int old_priority; //原本的优先级 
+	struct list locks; //持有的锁的队列 
+	bool donated; //是否被捐赠 
+	struct lock *blocked; //被阻塞的锁的队列 
     
     /* Record the time the thread has been blocked. */
     int64_t ticks_blocked;
@@ -110,7 +110,8 @@ struct thread
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
   };
-  
+
+//lab3 
 bool thread_cmp_priority (const struct list_elem *, const struct list_elem *, void *);
 void thread_donate_priority(struct thread *, int);
 
