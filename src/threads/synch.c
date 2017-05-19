@@ -230,7 +230,7 @@ lock_acquire (struct lock *lock)
   old_level = intr_disable ();
   
   struct thread *curr = thread_current();
-  if(!mlfqs) 
+  if(!thread_mlfqs) 
   {
 	struct thread *thrd = lock->holder;
 	struct lock *another = lock;
@@ -262,7 +262,7 @@ lock_acquire (struct lock *lock)
   
   //线程拿到锁后 
   lock->holder = curr;
-  if(!mlfqs) 
+  if(!thread_mlfqs) 
   {
 	curr->blocked = NULL;
 	lock->lock_priority = curr->priority;
@@ -312,7 +312,7 @@ lock_release (struct lock *lock)
   struct thread *curr = thread_current();
   lock->holder = NULL;
   
-  if(!mlfqs) 
+  if(!thread_mlfqs) 
   {
 	list_remove(&lock->holder_elem); //移出locks队列
 	lock->lock_priority = PRI_MIN-1;
@@ -320,7 +320,7 @@ lock_release (struct lock *lock)
    
   sema_up (&lock->semaphore);
   
-  if(!mlfqs) 
+  if(!thread_mlfqs) 
   {
 	if(list_empty(&curr->locks)) //线程不再占有锁 
 	{
