@@ -32,15 +32,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
-//lab4 
-/* cond sema comparation function */
-bool
-cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
-{
-  struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
-  struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
-  return (sa->semaphore.lock_priority > sb->semaphore.lock_priority);
-}
+
 
 //lab3 
 /* lock comparation function */
@@ -355,6 +347,16 @@ struct semaphore_elem
     struct list_elem elem;              /* List element. */
     struct semaphore semaphore;         /* This semaphore. */
   };
+  
+//lab4 
+/* cond sema comparation function */
+bool
+cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+  struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
+  struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
+  return (sa->semaphore.lock_priority > sb->semaphore.lock_priority);
+}
 
 /* Initializes condition variable COND.  A condition variable
    allows one piece of code to signal a condition and cooperating
