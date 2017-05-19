@@ -150,23 +150,6 @@ thread_tick (void)
   /* Enforce preemption. */
   if (++thread_ticks >= TIME_SLICE)
     intr_yield_on_return ();
-    
-  //lab4
-  if(thread_mlfqs)
-  {
-  	//每个timer_tick running线程的recent_cpu加1
-  	if(t!=idle_thread)
-  		t->recent_cpu = FP_ADD_MIX(t->recent_cpu, 1);
-  	//每100个ticks更新一次系统load_avg和所有线程的recent_cpu
-  	if(timer_ticks()%100==0)
-  	{
-  		renew_load_avg();
-  		renew_all_recent_cpu();
-  	}
-  	//每4个timer_ticks更新一次所有线程优先级
-  	if(timer_ticks()%4==0)
-  		renew_all_priority();
-  }
 }
 
 /* Prints thread statistics. */
@@ -239,6 +222,9 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
+  
+  //lab4
+  renew_priority(t);
   
   if(thread_current()->priority < priority)
   	thread_yield();
@@ -470,11 +456,15 @@ thread_get_nice (void)
 void renew_priority(struct thread *t)
 {
 	//priority = PRI_MAX-(recent_cpu/4)-(nice*2)
-	t->priority = FP_INT_PART(FP_SUB_MIX(FP_SUB(FP_CONST(PRI_MAX), 
-					FP_DIV_MIX(t->recent_cpu, 4)), 2 * t->nice));
-	//优先级应在PRI_MIN和PRI_MAX之间 
-	t->priority = t->priority < PRI_MIN ? PRI_MIN : t->priority;
-	t->priority = t->priority > PRI_MAX ? PRI_MAX : t->priority;
+	if(t!=idle_thread)
+	{
+		t->priority = FP_INT_PART(FP_SUB_MIX(FP_SUB(FP_CONST(PRI_MAX), 
+						FP_DIV_MIX(t->recent_cpu, 4)), 2 * t->nice));
+		//优先级应在PRI_MIN和PRI_MAX之间 
+		t->priority = t->priority < PRI_MIN ? PRI_MIN : t->priority;
+		t->priority = t->priority > PRI_MAX ? PRI_MAX : t->priority;
+	}
+	
 }
 //更新所有线程的优先级
 void renew_all_priority()
@@ -494,7 +484,7 @@ void renew_load_avg()
 {
 	size_t ready_threads = list_size (&ready_list);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
-	if (thread_current () != idle_thread)
+	if (thread_current() != idle_thread)
     	ready_threads++; 
     //load_avg = (59/60)*load_avg +(1/60)*ready_threads
 	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
@@ -512,8 +502,12 @@ thread_get_recent_cpu (void)
 void renew_recent_cpu(struct thread *t) 
 {
 	//recent_cpu = (2*load_avg)/(2*load_avg+1)*recent_cpu+nice
-	 t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
-	 FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
+	if(t!=idle_thread)
+	{
+		t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
+	 	FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
+	}
+	 
 }
 //更新所有线程的recent_cpu
 void renew_all_recent_cpu()
@@ -623,7 +617,6 @@ init_thread (struct thread *t, const char *name, int priority)
   {
   	t->nice = 0;
   	t->recent_cpu = FP_CONST(0);
-  	renew_priority(t);
   }
   
   
