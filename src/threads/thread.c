@@ -125,6 +125,9 @@ thread_start (void)
 
   /* Wait for the idle thread to initialize idle_thread. */
   sema_down (&idle_started);
+  
+  //lab4
+  load_avg = FP_CONST (0);
 }
 
 /* Called by the timer interrupt handler at each timer tick.
