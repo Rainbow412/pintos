@@ -149,7 +149,6 @@ thread_tick (void)
     intr_yield_on_return ();
     
   //lab4
-  struct thread *t = thread_current ();
   if(thread_mlfqs)
   {
   	//每个timer_tick running线程的recent_cpu加1
