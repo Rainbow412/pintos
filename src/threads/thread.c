@@ -453,7 +453,7 @@ thread_set_nice (int nice)
   curr->nice = nice;
   renew_priority(curr); //更新优先级 
   if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-  				thread_get_priority()))
+  				thread_get_priority())
   	thread_yield(); //优先级抢占 
 }
 /* Returns the current thread's nice value. */
