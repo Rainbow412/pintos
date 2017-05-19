@@ -485,13 +485,13 @@ thread_get_load_avg (void)
 //更新load_avg 
 void renew_load_avg(void)
 {
-	size_t ready_threads = list_size (&ready_list);
+	size_t ready_threads = list_size(&ready_list);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
 	if (thread_current() != idle_thread)
     	ready_threads++; 
     //load_avg = (59/60)*load_avg +(1/60)*ready_threads
-	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
-						FP_DIV_MIX (FP_CONST (ready_threads), 60));
+	load_avg = FP_ADD(FP_DIV_MIX(FP_MULT_MIX(load_avg, 59), 60), 
+						FP_DIV_MIX(FP_CONST(ready_threads), 60));
 }
 
 //lab4
@@ -509,6 +509,7 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 	{
 		t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
 	 	FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
+	 	renew_priority(t, NULL); //更新优先级 
 	}
 	 
 }
