@@ -224,7 +224,8 @@ thread_create (const char *name, int priority,
   thread_unblock (t);
   
   //lab4
-  renew_priority(t, NULL);
+  if(thread_mlfqs)
+  	renew_priority(t, NULL);
   
   if(thread_current()->priority < priority)
   	thread_yield();
