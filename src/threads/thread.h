@@ -157,10 +157,11 @@ void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 //lab4
-void renew_priority(struct thread *);
+void renew_priority(struct thread *t, void *aux UNUSED);
 void renew_all_priority(void);
 void renew_load_avg(void);
-void renew_recent_cpu(struct thread *);
+void renew_recent_cpu(struct thread *t, void *aux UNUSED);
 void renew_all_recent_cpu(void); 
+void increase_recent_cpu(void)
 
 #endif /* threads/thread.h */

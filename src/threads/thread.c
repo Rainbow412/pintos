@@ -146,23 +146,6 @@ thread_tick (void)
 #endif
   else
     kernel_ticks++;
-    
-  //lab4
-  if(thread_mlfqs)
-  {
-  	//每个timer_tick running线程的recent_cpu加1
-  	if(t!=idle_thread)
-  		t->recent_cpu = FP_ADD_MIX(t->recent_cpu, 1);
-  	//每TIMER_FREQ时间更新一次系统load_avg和所有线程的recent_cpu
-  	if(timer_ticks()%TIMER_FREQ ==0)
-  	{
-  		renew_load_avg();
-  		renew_all_recent_cpu();
-  	}
-  	//每4个timer_ticks更新一次所有线程优先级
-  	if(timer_ticks()%4==0)
-  		renew_all_priority();
-  }
 
   /* Enforce preemption. */
   if (++thread_ticks >= TIME_SLICE)
@@ -241,7 +224,7 @@ thread_create (const char *name, int priority,
   thread_unblock (t);
   
   //lab4
-  renew_priority(t);
+  renew_priority(t, NULL);
   
   if(thread_current()->priority < priority)
   	thread_yield();
@@ -470,7 +453,7 @@ thread_get_nice (void)
 
 //lab4
 //更新一个线程的优先级 
-void renew_priority(struct thread *t)
+void renew_priority(struct thread *t, void *aux UNUSED)
 {
 	//priority = PRI_MAX-(recent_cpu/4)-(nice*2)
 	if(t!=idle_thread)
@@ -484,7 +467,7 @@ void renew_priority(struct thread *t)
 	
 }
 //更新所有线程的优先级
-void renew_all_priority()
+void renew_all_priority(void)
 {
 	thread_foreach(renew_priority, NULL);
 } 
@@ -497,7 +480,7 @@ thread_get_load_avg (void)
   return FP_ROUND(FP_MULT_MIX(load_avg, 100));
 }
 //更新load_avg 
-void renew_load_avg()
+void renew_load_avg(void)
 {
 	size_t ready_threads = list_size (&ready_list);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
@@ -516,7 +499,7 @@ thread_get_recent_cpu (void)
   return FP_ROUND(FP_MULT_MIX(thread_current()->recent_cpu, 100));;
 }
 //更新recent_cpu
-void renew_recent_cpu(struct thread *t) 
+void renew_recent_cpu(struct thread *t, void *aux UNUSED) 
 {
 	//recent_cpu = (2*load_avg)/(2*load_avg+1)*recent_cpu+nice
 	if(t!=idle_thread)
@@ -527,10 +510,17 @@ void renew_recent_cpu(struct thread *t)
 	 
 }
 //更新所有线程的recent_cpu
-void renew_all_recent_cpu()
+void renew_all_recent_cpu(void)
 {
 	thread_foreach(renew_priority, NULL);
 } 
+//每个timer_tick running线程的recent_cpu加1
+void increase_recent_cpu(void)
+{
+	struct thread *curr = thread_current ();
+	if(curr != idle_thread)
+		curr->recent_cpu = FP_ADD_MIX(curr->recent_cpu, 1);
+}
 
 
 
