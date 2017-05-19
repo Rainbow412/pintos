@@ -9,7 +9,13 @@ struct semaphore
   {
     unsigned value;             /* Current value. */
     struct list waiters;        /* List of waiting threads. */
+    
+    //lab4
+	int lock_priority; //记录优先级 
   };
+
+//lab4
+bool cond_sema_cmp_priority (const struct list_elem *, const struct list_elem *, void *)； 
 
 void sema_init (struct semaphore *, unsigned value);
 void sema_down (struct semaphore *);

@@ -32,7 +32,17 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
+//lab4 
+/* cond sema comparation function */
+bool
+cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
+{
+  struct semaphore_elem *sa = list_entry (a, struct semaphore_elem, elem);
+  struct semaphore_elem *sb = list_entry (b, struct semaphore_elem, elem);
+  return list_entry(list_front(&sa->semaphore.waiters), struct thread, elem)->priority > list_entry(list_front(&sb->semaphore.waiters), struct thread, elem)->priority;
+}
 
+//lab3 
 /* lock comparation function */
 bool
 lock_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
@@ -388,7 +398,12 @@ cond_wait (struct condition *cond, struct lock *lock)
   ASSERT (lock_held_by_current_thread (lock));
   
   sema_init (&waiter.semaphore, 0);
-  list_push_back (&cond->waiters, &waiter.elem);
+  
+  //lab4 
+  //list_push_back (&cond->waiters, &waiter.elem);
+  waiter.semaphore.lock_priority = thread_current()->priority;
+  list_insert_ordered(&cond->waiters, &waiter.elem, cond_sema_cmp_priority, NULL);
+  
   lock_release (lock);
   sema_down (&waiter.semaphore);
   lock_acquire (lock);

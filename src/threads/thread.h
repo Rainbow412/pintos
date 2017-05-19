@@ -94,7 +94,7 @@ struct thread
 	int old_priority; //原本的优先级 
 	struct list locks; //持有的锁的队列 
 	bool donated; //是否被捐赠 
-	struct lock *blocked; //被阻塞的锁的队列 
+	struct lock *blocked; //指向被阻塞的锁 
     
     /* Record the time the thread has been blocked. */
     int64_t ticks_blocked;
