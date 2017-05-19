@@ -37,9 +37,9 @@
 bool
 cond_sema_cmp_priority (const struct list_elem *a, const struct list_elem *b, void *aux UNUSED)
 {
-  struct semaphore_elem *sa = list_entry (a, struct semaphore_elem, elem);
-  struct semaphore_elem *sb = list_entry (b, struct semaphore_elem, elem);
-  return list_entry(list_front(&sa->semaphore.waiters), struct thread, elem)->priority > list_entry(list_front(&sb->semaphore.waiters), struct thread, elem)->priority;
+  struct semaphore_elem *sa = list_entry(a, struct semaphore_elem, elem);
+  struct semaphore_elem *sb = list_entry(b, struct semaphore_elem, elem);
+  return (sa->semaphore.lock_priority > sb->semaphore.lock_priority);
 }
 
 //lab3 
