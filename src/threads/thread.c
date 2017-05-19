@@ -381,6 +381,8 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
+	if (thread_mlfqs)
+    	return;
 	//lab3
   	enum intr_level old_level;
   	old_level = intr_disable ();
