@@ -473,6 +473,8 @@ void renew_priority(struct thread *t, void *aux UNUSED)
 void renew_all_priority(void)
 {
 	thread_foreach(renew_priority, NULL);
+	//ready队列重新排序
+	list_sort(&ready_list, thread_cmp_priority, NULL);
 } 
 
 //lab4
@@ -510,6 +512,9 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 		t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
 	 	FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
 	 	renew_priority(t, NULL); //更新优先级 
+	 	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
+  				thread_get_priority())
+  			thread_yield(); //优先级抢占
 	}
 	 
 }
