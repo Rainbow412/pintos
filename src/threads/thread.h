@@ -95,6 +95,10 @@ struct thread
 	struct list locks; //持有的锁的队列 
 	bool donated; //是否被捐赠 
 	struct lock *blocked; //指向被阻塞的锁 
+	
+	//lab4
+	int nice; //对于其它线程的友好程度
+	fixed_t recent_cpu; //记录近期占用 CPU 情况
     
     /* Record the time the thread has been blocked. */
     int64_t ticks_blocked;
@@ -151,5 +155,11 @@ int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
+//lab4
+void renew_priority(struct thread *);
+void renew_all_priority(void);
+void renew_load_avg(void);
+void renew_recent_cpu(struct thread *);
+void renew_all_recent_cpu(void); 
 
 #endif /* threads/thread.h */

@@ -49,6 +49,8 @@ struct kernel_thread_frame
 static long long idle_ticks;    /* # of timer ticks spent idle. */
 static long long kernel_ticks;  /* # of timer ticks in kernel threads. */
 static long long user_ticks;    /* # of timer ticks in user programs. */
+//lab4
+static fixed_t load_avg; //记录系统平均负载
 
 /* Scheduling. */
 #define TIME_SLICE 4            /* # of timer ticks to give each thread. */
@@ -144,6 +146,24 @@ thread_tick (void)
   /* Enforce preemption. */
   if (++thread_ticks >= TIME_SLICE)
     intr_yield_on_return ();
+    
+  //lab4
+  struct thread *t = thread_current ();
+  if(thread_mlfqs)
+  {
+  	//每个timer_tick running线程的recent_cpu加1
+  	if(t!=idle_thread)
+  		t->recent_cpu = FP_ADD_MIX(t->recent_cpu, 1);
+  	//每100个ticks更新一次系统load_avg和所有线程的recent_cpu
+  	if(timer_ticks()%100==0)
+  	{
+  		renew_load_avg();
+  		renew_all_recent_cpu();
+  	}
+  	//每4个timer_ticks更新一次所有线程优先级
+  	if(timer_ticks()%4==0)
+  		renew_all_priority();
+  }
 }
 
 /* Prints thread statistics. */
@@ -423,36 +443,84 @@ thread_get_priority (void)
   return thread_current ()->priority;
 }
 
+//lab4
 /* Sets the current thread's nice value to NICE. */
 void
-thread_set_nice (int nice UNUSED) 
+thread_set_nice (int nice) 
 {
-  /* Not yet implemented. */
+  struct thread *curr = thread_current(); 
+  curr->nice = nice;
+  renew_priority(curr); //更新优先级 
+  if(list_entry(list_begin(&ready_list, struct thread, elem)->priority >
+  				thread_get_priority()))
+  	thread_yield(); //优先级抢占 
 }
-
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  return thread_current()->nice;
 }
 
+//lab4
+//更新一个线程的优先级 
+void renew_priority(struct thread *t)
+{
+	//priority = PRI_MAX-(recent_cpu/4)-(nice*2)
+	t->priority = FP_INT_PART(FP_SUB_MIX(FP_SUB(FP_CONST(PRI_MAX), 
+					FP_DIV_MIX(t->recent_cpu, 4)), 2 * t->nice));
+	//优先级应在PRI_MIN和PRI_MAX之间 
+	t->priority = t->priority < PRI_MIN ? PRI_MIN : t->priority;
+	t->priority = t->priority > PRI_MAX ? PRI_MAX : t->priority;
+}
+//更新所有线程的优先级
+void renew_all_priority()
+{
+	thread_foreach(renew_priority, NULL);
+} 
+
+//lab4
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  return FP_ROUND(FP_MULT_MIX(load_avg, 100));
+}
+//更新load_avg 
+void renew_load_avg()
+{
+	size_t ready_threads = list_size (&ready_list);
+	//ready_threads指就绪队列和运行线程中非idle状态的线程数
+	if (thread_current () != idle_thread)
+    	ready_threads++; 
+    //load_avg = (59/60)*load_avg +(1/60)*ready_threads
+	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
+						FP_DIV_MIX (FP_CONST (ready_threads), 60));
 }
 
+//lab4
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  return FP_ROUND(FP_MULT_MIX(thread_current()->recent_cpu, 100));;
 }
+//更新recent_cpu
+void renew_recent_cpu(struct thread *t) 
+{
+	//recent_cpu = (2*load_avg)/(2*load_avg+1)*recent_cpu+nice
+	 t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
+	 FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
+}
+//更新所有线程的recent_cpu
+void renew_all_recent_cpu()
+{
+	thread_foreach(renew_priority, NULL);
+} 
+
+
+
+
 
 /* Idle thread.  Executes when no other thread is ready to run.
 
@@ -537,14 +605,24 @@ init_thread (struct thread *t, const char *name, int priority)
   t->status = THREAD_BLOCKED;
   strlcpy (t->name, name, sizeof t->name);
   t->stack = (uint8_t *) t + PGSIZE;
-  t->priority = priority;
   t->magic = THREAD_MAGIC;
   
   //lab3
-  t->old_priority = priority;
   t->donated = 0;
-  list_init(&t->locks);
-  t->blocked = NULL;
+  if(!thread_mlfqs)
+  {
+  	t->priority = priority;
+  	t->old_priority = priority;
+  	list_init(&t->locks);
+  	t->blocked = NULL;
+  }
+  else //lab4
+  {
+  	t->nice = 0;
+  	t->recent_cpu = FP_CONST(0);
+  	renew_priority(t);
+  }
+  
   
   //list_push_back (&all_list, &t->allelem);
   list_insert_ordered (&all_list, &t->allelem, (list_less_func *) &thread_cmp_priority, NULL);
