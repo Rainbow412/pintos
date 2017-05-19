@@ -146,6 +146,23 @@ thread_tick (void)
 #endif
   else
     kernel_ticks++;
+    
+  //lab4
+  if(thread_mlfqs)
+  {
+  	//每个timer_tick running线程的recent_cpu加1
+  	if(t!=idle_thread)
+  		t->recent_cpu = FP_ADD_MIX(t->recent_cpu, 1);
+  	//每TIMER_FREQ时间更新一次系统load_avg和所有线程的recent_cpu
+  	if(timer_ticks()%TIMER_FREQ ==0)
+  	{
+  		renew_load_avg();
+  		renew_all_recent_cpu();
+  	}
+  	//每4个timer_ticks更新一次所有线程优先级
+  	if(timer_ticks()%4==0)
+  		renew_all_priority();
+  }
 
   /* Enforce preemption. */
   if (++thread_ticks >= TIME_SLICE)
