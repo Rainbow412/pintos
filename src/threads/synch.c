@@ -229,38 +229,45 @@ lock_acquire (struct lock *lock)
   enum intr_level old_level;
   old_level = intr_disable ();
   
-  struct thread *thrd = lock->holder;
   struct thread *curr = thread_current();
-  struct lock *another = lock;
-  curr->blocked = another;
-  //当持有锁的线程的优先级小于当前线程优先级时要进行优先级捐赠 
-  while(thrd != NULL && thrd->priority < curr->priority)
+  if(!mlfqs) 
   {
-  	thrd->donated = 1; //donated状态标记 
-  	thread_donate_priority(thrd, curr->priority);//优先级捐赠 
-  	if(another->lock_priority < curr->priority) 
-  	{
-  		another->lock_priority = curr->priority; //更新锁的最大优先级 
-  		//locks队列更新 
-  		list_remove(&another->holder_elem);
-  		list_insert_ordered(&thrd->locks, &another->holder_elem, lock_cmp_priority,NULL);
-  	}
-  	//迭代捐赠 
-  	if(thrd->blocked!=NULL && thrd->status==THREAD_BLOCKED)
-  	{
-  		another = thrd->blocked;
-  		thrd = thrd->blocked->holder;
-  	}
-  	else
-  		break;
-  }
+	struct thread *thrd = lock->holder;
+	struct lock *another = lock;
+	curr->blocked = another;
+	//当持有锁的线程的优先级小于当前线程优先级时要进行优先级捐赠 
+	while(thrd != NULL && thrd->priority < curr->priority)
+	{
+	thrd->donated = 1; //donated状态标记 
+	thread_donate_priority(thrd, curr->priority);//优先级捐赠 
+	if(another->lock_priority < curr->priority) 
+	{
+		another->lock_priority = curr->priority; //更新锁的最大优先级 
+		//locks队列更新 
+		list_remove(&another->holder_elem);
+		list_insert_ordered(&thrd->locks, &another->holder_elem, lock_cmp_priority,NULL);
+	}
+	//迭代捐赠 
+	if(thrd->blocked!=NULL && thrd->status==THREAD_BLOCKED)
+	{
+		another = thrd->blocked;
+		thrd = thrd->blocked->holder;
+	}
+	else
+		break;
+	}
+  } 
+  
   sema_down (&lock->semaphore);
   
   //线程拿到锁后 
   lock->holder = curr;
-  curr->blocked = NULL;
-  lock->lock_priority = curr->priority;
-  list_insert_ordered(&lock->holder->locks, &lock->holder_elem, lock_cmp_priority,NULL);
+  if(!mlfqs) 
+  {
+	curr->blocked = NULL;
+	lock->lock_priority = curr->priority;
+	list_insert_ordered(&lock->holder->locks, &lock->holder_elem, lock_cmp_priority,NULL);
+  } 
   
   intr_set_level (old_level);
   //lab3 end
@@ -304,27 +311,35 @@ lock_release (struct lock *lock)
   
   struct thread *curr = thread_current();
   lock->holder = NULL;
-  list_remove(&lock->holder_elem); //移出locks队列
-  lock->lock_priority = PRI_MIN-1;
+  
+  if(!mlfqs) 
+  {
+	list_remove(&lock->holder_elem); //移出locks队列
+	lock->lock_priority = PRI_MIN-1;
+  } 
    
   sema_up (&lock->semaphore);
   
-  if(list_empty(&curr->locks)) //线程不再占有锁 
+  if(!mlfqs) 
   {
-  	curr->donated = 0; //donated状态恢复 
-  	thread_set_priority(curr->old_priority); //恢复优先级 
-  }
-  else //线程还占有锁 
-  {
-  	struct lock *another;
+	if(list_empty(&curr->locks)) //线程不再占有锁 
+	{
+	curr->donated = 0; //donated状态恢复 
+	thread_set_priority(curr->old_priority); //恢复优先级 
+	}
+	else //线程还占有锁 
+	{
+	struct lock *another;
 	another = list_entry(list_front(&curr->locks), struct lock, holder_elem);
 	//占有的锁优先级比线程本身的优先级更高时，进行优先级捐赠 
 	//否则， 恢复为线程本身的优先级 
-  	if(another->lock_priority > curr->old_priority) 
-  		thread_donate_priority(curr, another->lock_priority);//优先级捐赠 
-  	else
-  	  thread_set_priority(curr->old_priority); //恢复为线程本身的优先级 
-  }
+	if(another->lock_priority > curr->old_priority) 
+		thread_donate_priority(curr, another->lock_priority);//优先级捐赠 
+	else
+	  thread_set_priority(curr->old_priority); //恢复为线程本身的优先级 
+	}
+  } 
+  
   intr_set_level (old_level);
   //lab3 end 
 
