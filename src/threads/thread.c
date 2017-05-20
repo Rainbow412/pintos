@@ -515,7 +515,6 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 	{
 		t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
 	 	FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
-	 	renew_priority(t, NULL); //更新优先级 
 	}
 	 
 }
