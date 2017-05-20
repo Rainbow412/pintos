@@ -102,9 +102,6 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
-  
-  //lab4
-  load_avg = FP_CONST(0);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
@@ -112,6 +109,8 @@ thread_init (void)
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
   
+  //lab4
+  load_avg = FP_CONST(0);
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -492,6 +491,7 @@ thread_get_load_avg (void)
 void renew_load_avg(void)
 {
 	size_t ready_threads = list_size(&ready_list);
+	printf("ready_threads: %d", ready_threads);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
 	if (thread_current() != idle_thread)
     	ready_threads++; 
