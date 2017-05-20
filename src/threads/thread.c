@@ -223,12 +223,12 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
   
-  //ready队列重新排序
-	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-				 thread_get_priority())
-		thread_yield(); //优先级抢占 
-//  if(thread_current()->priority < priority)
-//  	thread_yield();
+//  //ready队列重新排序
+//	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
+//				 thread_get_priority())
+//		thread_yield(); //优先级抢占 
+  if(thread_current()->priority < priority)
+  	thread_yield();
 
   return tid;
 }
