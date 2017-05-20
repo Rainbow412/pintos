@@ -180,6 +180,8 @@ timer_interrupt (struct intr_frame *args UNUSED)
   //lab4
   if(thread_mlfqs)
   {
+  	//每个timer_tick running线程的recent_cpu加1
+  	increase_recent_cpu();
   	//每TIMER_FREQ时间更新一次系统load_avg和所有线程的recent_cpu
   	if(ticks%TIMER_FREQ ==0)
   	{
@@ -189,10 +191,8 @@ timer_interrupt (struct intr_frame *args UNUSED)
   	//每4个timer_ticks更新一次所有线程优先级
   	if(ticks%4==0)
   	{
-  		renew_priority(thread_current(), NULL); //更新优先级 //renew_all_priority();
+  		renew_all_priority();
   	}
-  	//每个timer_tick running线程的recent_cpu加1
-  	increase_recent_cpu();
   }
   
   thread_foreach(blocked_thread_check, NULL);

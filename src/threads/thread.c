@@ -51,7 +51,7 @@ static long long idle_ticks;    /* # of timer ticks spent idle. */
 static long long kernel_ticks;  /* # of timer ticks in kernel threads. */
 static long long user_ticks;    /* # of timer ticks in user programs. */
 //lab4
-static fixed_t load_avg; //记录系统平均负载
+fixed_t load_avg; //记录系统平均负载
 
 /* Scheduling. */
 #define TIME_SLICE 4            /* # of timer ticks to give each thread. */
@@ -102,12 +102,16 @@ thread_init (void)
   lock_init (&tid_lock);
   list_init (&ready_list);
   list_init (&all_list);
+  
+  //lab4
+  load_avg = FP_CONST(0);
 
   /* Set up a thread structure for the running thread. */
   initial_thread = running_thread ();
   init_thread (initial_thread, "main", PRI_DEFAULT);
   initial_thread->status = THREAD_RUNNING;
   initial_thread->tid = allocate_tid ();
+  
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -125,9 +129,6 @@ thread_start (void)
 
   /* Wait for the idle thread to initialize idle_thread. */
   sema_down (&idle_started);
-  
-  //lab4
-  load_avg = FP_CONST(0);
 }
 
 /* Called by the timer interrupt handler at each timer tick.
@@ -621,22 +622,19 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
   
   //lab3
-  t->donated = 0;
+  	t->donated = 0;
+	t->priority = priority;
+	t->old_priority = priority;
+	list_init(&t->locks);
+	t->blocked = NULL;
 
-  	t->priority = priority;
-  	t->old_priority = priority;
-  	list_init(&t->locks);
-  	t->blocked = NULL;
-
- //lab4
-
+  //lab4
   	t->nice = 0;
   	t->recent_cpu = FP_CONST(0);
   	//lab4
 	//renew_priority(t, NULL);
 
-  
-  
+
   //list_push_back (&all_list, &t->allelem);
   list_insert_ordered (&all_list, &t->allelem, (list_less_func *) &thread_cmp_priority, NULL);
 }
