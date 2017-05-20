@@ -495,6 +495,8 @@ void renew_load_avg(void)
     //load_avg = (59/60)*load_avg +(1/60)*ready_threads
 	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
 						FP_DIV_MIX (FP_CONST (ready_threads), 60));
+						
+	printf("\nload_avg: %d\n", FP_ROUND(FP_MULT_MIX(load_avg, 100)/100);
 }
 
 //lab4
