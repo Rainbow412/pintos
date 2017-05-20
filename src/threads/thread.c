@@ -127,7 +127,7 @@ thread_start (void)
   sema_down (&idle_started);
   
   //lab4
-  load_avg = FP_CONST (0);
+  load_avg = FP_CONST(0);
 }
 
 /* Called by the timer interrupt handler at each timer tick.
@@ -222,10 +222,6 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-  
-  //lab4
-  if(thread_mlfqs)
-  	renew_priority(t, NULL);
   
   if(thread_current()->priority < priority)
   	thread_yield();
@@ -444,7 +440,7 @@ thread_set_nice (int nice)
   curr->nice = nice;
   renew_priority(curr, NULL); //更新优先级 
   if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-  				thread_get_priority())
+  				 thread_get_priority())
   	thread_yield(); //优先级抢占 
 }
 /* Returns the current thread's nice value. */
@@ -462,7 +458,7 @@ void renew_priority(struct thread *t, void *aux UNUSED)
 	if(t!=idle_thread)
 	{
 		t->priority = FP_INT_PART(FP_SUB_MIX(FP_SUB(FP_CONST(PRI_MAX), 
-						FP_DIV_MIX(t->recent_cpu, 4)), 2 * t->nice));
+						FP_DIV_MIX(t->recent_cpu, 4)), 2*t->nice));
 		//优先级应在PRI_MIN和PRI_MAX之间 
 		t->priority = t->priority < PRI_MIN ? PRI_MIN : t->priority;
 		t->priority = t->priority > PRI_MAX ? PRI_MAX : t->priority;
@@ -475,6 +471,9 @@ void renew_all_priority(void)
 	thread_foreach(renew_priority, NULL);
 	//ready队列重新排序
 	list_sort(&ready_list, thread_cmp_priority, NULL);
+	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
+  				 thread_get_priority())
+  		thread_yield(); //优先级抢占 
 } 
 
 //lab4
@@ -512,9 +511,6 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 		t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
 	 	FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
 	 	renew_priority(t, NULL); //更新优先级 
-	 	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-  				thread_get_priority())
-  			thread_yield(); //优先级抢占
 	}
 	 
 }
@@ -633,6 +629,9 @@ init_thread (struct thread *t, const char *name, int priority)
   {
   	t->nice = 0;
   	t->recent_cpu = FP_CONST(0);
+  	//lab4
+	if(thread_mlfqs)
+	renew_priority(t, NULL);
   }
   
   
