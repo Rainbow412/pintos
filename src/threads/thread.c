@@ -496,8 +496,8 @@ void renew_load_avg(void)
 	if (thread_current() != idle_thread)
     	ready_threads++; 
     //load_avg = (59/60)*load_avg +(1/60)*ready_threads
-	load_avg = FP_ADD(FP_DIV_MIX(FP_MULT_MIX(load_avg, 59), 60), 
-						FP_DIV_MIX(FP_CONST(ready_threads), 60));
+	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
+						FP_DIV_MIX (FP_CONST (ready_threads), 60));
 }
 
 //lab4
