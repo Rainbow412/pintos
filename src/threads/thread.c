@@ -260,9 +260,6 @@ thread_block (void)
 void
 thread_unblock (struct thread *t) 
 {
-	
-  printf("unblock %s.\n", thread_name()); 
-  
   enum intr_level old_level;
 
   ASSERT (is_thread (t));

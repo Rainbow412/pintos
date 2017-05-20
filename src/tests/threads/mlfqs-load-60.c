@@ -149,7 +149,9 @@ load_thread (void *aux UNUSED)
 
   thread_set_nice (20);
   timer_sleep (sleep_time - timer_elapsed (start_time));
+  printf("%s wake up\n", thread_name());
   while (timer_elapsed (start_time) < spin_time)
     continue;
+  printf("%s while end\n", thread_name());
   timer_sleep (exit_time - timer_elapsed (start_time));
 }
