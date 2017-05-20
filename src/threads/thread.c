@@ -475,9 +475,9 @@ void renew_all_priority(void)
 	thread_foreach(renew_priority, NULL);
 	//ready队列重新排序
 	list_sort(&ready_list, thread_cmp_priority, NULL);
-	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-  				 thread_get_priority())
-  		thread_yield(); //优先级抢占 
+//	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
+//  				 thread_get_priority())
+//  		thread_yield(); //优先级抢占 
 } 
 
 //lab4
