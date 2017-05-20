@@ -475,9 +475,6 @@ void renew_all_priority(void)
 	thread_foreach(renew_priority, NULL);
 	//ready队列重新排序
 	list_sort(&ready_list, thread_cmp_priority, NULL);
-//	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-//  				 thread_get_priority())
-//  		thread_yield(); //优先级抢占 
 } 
 
 //lab4
@@ -491,6 +488,7 @@ thread_get_load_avg (void)
 void renew_load_avg(void)
 {
 	size_t ready_threads = list_size (&ready_list);
+	printf("\nready_threads: %d\n", ready_threads);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
 	if (thread_current() != idle_thread)
     	ready_threads++; 
