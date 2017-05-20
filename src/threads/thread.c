@@ -491,7 +491,6 @@ thread_get_load_avg (void)
 void renew_load_avg(void)
 {
 	size_t ready_threads = list_size(&ready_list);
-	printf("ready_threads: %d", ready_threads);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
 	if (thread_current() != idle_thread)
     	ready_threads++; 
