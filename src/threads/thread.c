@@ -223,8 +223,12 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
   
-  if(thread_current()->priority < priority)
-  	thread_yield();
+  //ready队列重新排序
+	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
+  				 thread_get_priority())
+  		thread_yield(); //优先级抢占 
+//  if(thread_current()->priority < priority)
+//  	thread_yield();
 
   return tid;
 }
@@ -630,7 +634,6 @@ init_thread (struct thread *t, const char *name, int priority)
   	t->nice = 0;
   	t->recent_cpu = FP_CONST(0);
   	//lab4
-	if(thread_mlfqs)
 	renew_priority(t, NULL);
   }
   
