@@ -223,12 +223,12 @@ thread_create (const char *name, int priority,
   /* Add to run queue. */
   thread_unblock (t);
   
-//  //ready队列重新排序
-//	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
-//				 thread_get_priority())
-//		thread_yield(); //优先级抢占 
-  if(thread_current()->priority < priority)
-  	thread_yield();
+
+	if(list_entry(list_begin(&ready_list), struct thread, elem)->priority >
+				 thread_get_priority())
+		thread_yield(); //优先级抢占 
+//  if(thread_current()->priority < priority)
+//  	thread_yield();
 
   return tid;
 }
@@ -620,19 +620,22 @@ init_thread (struct thread *t, const char *name, int priority)
   t->magic = THREAD_MAGIC;
   
   //lab3
+  if(!thread_mlfqs)
+  {
   	t->donated = 0;
 	t->priority = priority;
 	t->old_priority = priority;
 	list_init(&t->locks);
 	t->blocked = NULL;
-
-  //lab4
+  }
+  else//lab4
+  {
   	t->nice = 0;
   	t->recent_cpu = FP_CONST(0);
   	//lab4
-	//renew_priority(t, NULL);
-
-
+	renew_priority(t, NULL);
+  }
+  
   //list_push_back (&all_list, &t->allelem);
   list_insert_ordered (&all_list, &t->allelem, (list_less_func *) &thread_cmp_priority, NULL);
 }
