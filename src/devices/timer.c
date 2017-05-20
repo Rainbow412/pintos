@@ -175,6 +175,9 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
+  
+  enum intr_level old_level;
+  old_level = intr_disable ();
   thread_tick();
   thread_foreach(blocked_thread_check, NULL);
   
@@ -195,6 +198,8 @@ timer_interrupt (struct intr_frame *args UNUSED)
   		renew_all_priority();
   	}
   }
+  
+  intr_set_level (old_level);
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
