@@ -150,6 +150,24 @@ thread_tick (void)
   /* Enforce preemption. */
   if (++thread_ticks >= TIME_SLICE)
     intr_yield_on_return ();
+    
+  //lab4
+  if(thread_mlfqs)
+  {
+  	//每个timer_tick running线程的recent_cpu加1
+  	increase_recent_cpu();
+  	//每TIMER_FREQ时间更新一次系统load_avg和所有线程的recent_cpu
+  	if(timer_ticks()%100 ==0)
+  	{
+  		renew_load_avg();
+  		renew_all_recent_cpu();
+  	}
+  	//每4个timer_ticks更新一次所有线程优先级
+  	if(timer_ticks()%4==0)
+  	{
+  		renew_all_priority();
+  	}
+  }
 }
 
 /* Prints thread statistics. */
@@ -488,15 +506,12 @@ thread_get_load_avg (void)
 void renew_load_avg(void)
 {
 	size_t ready_threads = list_size (&ready_list);
-	printf("\nready_threads: %d\n", ready_threads);
 	//ready_threads指就绪队列和运行线程中非idle状态的线程数
 	if (thread_current() != idle_thread)
     	ready_threads++; 
     //load_avg = (59/60)*load_avg +(1/60)*ready_threads
 	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
 						FP_DIV_MIX (FP_CONST (ready_threads), 60));
-						
-	printf("\nload_avg: %d\n", FP_ROUND(FP_MULT_MIX(load_avg, 100))/100);
 }
 
 //lab4
@@ -520,7 +535,7 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 //更新所有线程的recent_cpu
 void renew_all_recent_cpu(void)
 {
-	thread_foreach(renew_priority, NULL);
+	thread_foreach(renew_recent_cpu, NULL);
 } 
 //每个timer_tick running线程的recent_cpu加1
 void increase_recent_cpu(void)
