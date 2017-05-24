@@ -527,8 +527,8 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 	//recent_cpu = (2*load_avg)/(2*load_avg+1)*recent_cpu+nice
 	if(t!=idle_thread)
 	{
-		t->recent_cpu = FP_ADD_FP(FP_MULT_FP(FP_DIV_FP(FP_MULT_INT(load_avg, 2), 
-	 	FP_ADD_FP(FP_MULT_INT(load_avg, 2), 1)), t->recent_cpu), t->nice);
+		t->recent_cpu = FP_ADD_INT(FP_MULT_FP(FP_DIV_FP(FP_MULT_INT(load_avg, 2), 
+	 	FP_ADD_INT(FP_MULT_INT(load_avg, 2), 1)), t->recent_cpu), t->nice);
 	}
 	 
 }
@@ -542,7 +542,7 @@ void increase_recent_cpu(void)
 {
 	struct thread *curr = thread_current ();
 	if(curr != idle_thread)
-		curr->recent_cpu = FP_ADD_FP(curr->recent_cpu, 1);
+		curr->recent_cpu = FP_ADD_INT(curr->recent_cpu, 1);
 }
 
 
