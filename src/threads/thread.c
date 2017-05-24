@@ -110,7 +110,7 @@ thread_init (void)
   initial_thread->tid = allocate_tid ();
   
   //lab4
-  load_avg = FP_CONST(0);
+  load_avg = INT_TO_FP(0);
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -479,8 +479,8 @@ void renew_priority(struct thread *t, void *aux UNUSED)
 	//priority = PRI_MAX-(recent_cpu/4)-(nice*2)
 	if(t!=idle_thread)
 	{
-		t->priority = FP_INT_PART(FP_SUB_MIX(FP_SUB(FP_CONST(PRI_MAX), 
-						FP_DIV_MIX(t->recent_cpu, 4)), 2*t->nice));
+		t->priority = FP_INT_PART(FP_SUB_INT(FP_SUB_FP(INT_TO_FP(PRI_MAX), 
+						FP_DIV_INT(t->recent_cpu, 4)), 2*t->nice));
 		//优先级应在PRI_MIN和PRI_MAX之间 
 		t->priority = t->priority < PRI_MIN ? PRI_MIN : t->priority;
 		t->priority = t->priority > PRI_MAX ? PRI_MAX : t->priority;
@@ -500,7 +500,7 @@ void renew_all_priority(void)
 int
 thread_get_load_avg (void) 
 {
-  return FP_ROUND(FP_MULT_MIX(load_avg, 100));
+  return FP_ROUND(FP_MULT_INT(load_avg, 100));
 }
 //更新load_avg 
 void renew_load_avg(void)
@@ -510,8 +510,8 @@ void renew_load_avg(void)
 	if (thread_current() != idle_thread)
     	ready_threads++; 
     //load_avg = (59/60)*load_avg +(1/60)*ready_threads
-	load_avg = FP_ADD (FP_DIV_MIX (FP_MULT_MIX (load_avg, 59), 60), 
-						FP_DIV_MIX (FP_CONST (ready_threads), 60));
+	load_avg = FP_ADD_FP (FP_DIV_INT (FP_MULT_INT (load_avg, 59), 60), 
+						FP_DIV_INT (INT_TO_FP (ready_threads), 60));
 }
 
 //lab4
@@ -519,7 +519,7 @@ void renew_load_avg(void)
 int
 thread_get_recent_cpu (void) 
 {
-  return FP_ROUND(FP_MULT_MIX(thread_current()->recent_cpu, 100));;
+  return FP_ROUND(FP_MULT_INT(thread_current()->recent_cpu, 100));;
 }
 //更新recent_cpu
 void renew_recent_cpu(struct thread *t, void *aux UNUSED) 
@@ -527,8 +527,8 @@ void renew_recent_cpu(struct thread *t, void *aux UNUSED)
 	//recent_cpu = (2*load_avg)/(2*load_avg+1)*recent_cpu+nice
 	if(t!=idle_thread)
 	{
-		t->recent_cpu = FP_ADD_MIX(FP_MULT(FP_DIV(FP_MULT_MIX(load_avg, 2), 
-	 	FP_ADD_MIX(FP_MULT_MIX(load_avg, 2), 1)), t->recent_cpu), t->nice);
+		t->recent_cpu = FP_ADD_FP(FP_MULT_FP(FP_DIV_FP(FP_MULT_INT(load_avg, 2), 
+	 	FP_ADD_FP(FP_MULT_INT(load_avg, 2), 1)), t->recent_cpu), t->nice);
 	}
 	 
 }
@@ -542,7 +542,7 @@ void increase_recent_cpu(void)
 {
 	struct thread *curr = thread_current ();
 	if(curr != idle_thread)
-		curr->recent_cpu = FP_ADD_MIX(curr->recent_cpu, 1);
+		curr->recent_cpu = FP_ADD_FP(curr->recent_cpu, 1);
 }
 
 
@@ -643,7 +643,7 @@ init_thread (struct thread *t, const char *name, int priority)
 
   //lab4
   	t->nice = 0;
-  	t->recent_cpu = FP_CONST(0);
+  	t->recent_cpu = INT_TO_FP(0);
   	//lab4
 	//renew_priority(t, NULL);
 
